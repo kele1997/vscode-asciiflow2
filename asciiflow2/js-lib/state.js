@@ -276,7 +276,7 @@ export default class State {
    * @param {Box=} opt_box
    * @return {string}
    */
-  outputText(opt_box) {
+  outputText(opt_box, raw = false) {
     // Find the first/last cells in the diagram so we don't output everything.
     var start = new Vector(Number.MAX_VALUE, Number.MAX_VALUE);
     var end = new Vector(-1, -1);
@@ -308,7 +308,7 @@ export default class State {
       // Trim end whitespace.
       output += line.replace(/\s+$/, '') + '\n';
     }
-    return output;
+    return raw ? output : State.unpaddingText(output);
   }
 
   /**
@@ -317,6 +317,7 @@ export default class State {
    * @param {Vector} offset
    */
   fromText(value, offset) {
+    value = State.paddingText(value)
     var lines = value.split('\n');
     var middle = new Vector(0, Math.round(lines.length / 2));
     for (var j = 0; j < lines.length; j++) {
@@ -335,5 +336,17 @@ export default class State {
         this.drawValue(new Vector(i, j).add(offset).subtract(middle), char);
       }
     }
+  }
+
+  /**
+   * For multi-byte character, padding/unpadding blanks.
+   * @param {string} text
+   * @return {string}
+   */
+  static paddingText(text) {
+    return text.replace(/([^\x01-\x7E\xA1-\xDF])/g, "$1 ");
+  }
+  static unpaddingText(text) {
+    return text.replace(/(([^\x01-\x7E\xA1-\xDF]) )/g, "$2");
   }
 }
